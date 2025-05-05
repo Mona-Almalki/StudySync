@@ -4,22 +4,24 @@ import { useNavigate } from 'react-router-dom';
 function CompletedTasks() {
     const [tasks, setTasks] = useState([]);
     const navigate = useNavigate();
-
+    
+//e
     useEffect(() => {
-        const user = JSON.parse(localStorage.getItem("user"));
-
-        fetch(`http://localhost/php_server/tasks.php?user_id=${user.id}`)
+            //  جلب المهام من ملف PHP
+            fetch("http://localhost/php_server/tasks.php")
             .then(res => res.json())
             .then(data => {
-                const completedTasks = data
-                    .map((task, index) => ({ ...task, globalIndex: index }))
-                    .filter(task => task.status === 'completed');
-                setTasks(completedTasks);
+              const completedTasks = data
+                .map((task, index) => ({ ...task, globalIndex: index }))
+                .filter(task => task.status === 'completed');
+              setTasks(completedTasks);
             })
-            .catch(error => {
-                console.error("Failed to fetch tasks:", error);
-            });
-    }, []);
+          
+                .catch(error => {
+                    console.error("Failed to fetch tasks:", error);
+                });
+        }, []);
+    
 
     const handleEdit = (task, index) => {
         navigate('/edit-task', {
