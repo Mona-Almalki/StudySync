@@ -1,2 +1,4 @@
-# StudySync
-CPIT405Project
+## Developed by
+Mona Almalki
+Raghad Alghamdi
+Aryam Alsulami
