@@ -15,6 +15,7 @@ function EditTask() {
   const [alertOn, setAlertOn] = useState(task?.alert || false);
   const [selectedDate, setSelectedDate] = useState(task?.date ? new Date(task.date) : new Date());
 
+
   const handleSave = async () => {
     const updatedTask = {
       name: taskName,
@@ -45,6 +46,7 @@ function EditTask() {
       alert("Failed to update task.");
     }
   };
+
 
   const handleDelete = async () => {
     try {
