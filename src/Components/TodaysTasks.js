@@ -15,7 +15,7 @@ function EditTask() {
   const [alertOn, setAlertOn] = useState(task?.alert || false);
   const [selectedDate, setSelectedDate] = useState(task?.date ? new Date(task.date) : new Date());
 
-  // حفظ التعديلات
+
   const handleSave = async () => {
     const updatedTask = {
       name: taskName,
@@ -47,7 +47,7 @@ function EditTask() {
     }
   };
 
-  // حذف المهمة
+
   const handleDelete = async () => {
     try {
       const response = await fetch("http://localhost/php_server/tasks.php", {
