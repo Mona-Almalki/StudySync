@@ -1,72 +1,126 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
+import { useLocation, useNavigate } from "react-router-dom";
 
-function TodaysTasks() {
-    const [tasks, setTasks] = useState([]);
-    const navigate = useNavigate();
+function EditTask() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const task = location.state?.task;
+  const taskIndex = location.state?.index;
 
-    useEffect(() => {
-        const user = JSON.parse(localStorage.getItem("user"));
-        const today = new Date().toDateString();
+  const [taskName, setTaskName] = useState(task?.name || "");
+  const [taskDescription, setTaskDescription] = useState(task?.description || "");
+  const [taskStatus, setTaskStatus] = useState(task?.status || "");
+  const [alertOn, setAlertOn] = useState(task?.alert || false);
+  const [selectedDate, setSelectedDate] = useState(task?.date ? new Date(task.date) : new Date());
 
-        fetch(`http://localhost/php_server/tasks.php?user_id=${user.id}`)
-            .then((res) => res.json())
-            .then((data) => {
-                const todayTasks = data.filter(task =>
-                    new Date(task.date).toDateString() === today
-                );
-                setTasks(todayTasks);
-            })
-            .catch((error) => {
-                console.error("Failed to fetch today's tasks:", error);
-            });
-    }, []);
-
-    const handleEdit = (task, index) => {
-        navigate('/edit-task', {
-            state: { task, index },
-        });
+  const handleSave = async () => {
+    const updatedTask = {
+      name: taskName,
+      description: taskDescription,
+      status: taskStatus,
+      alert: alertOn,
+      date: selectedDate
     };
 
-    return (
-        <div className="taskView">
-            <div className='header-box'>
-                <img src="/icons/yellow-circle.svg" alt="Today's task" width="15" height="15" />
-                <h2>Today's Tasks</h2>
-            </div>
-            <div className="task-list">
-                {tasks.length > 0 ? (
-                    tasks.map((task, index) => (
-                        <div key={index} className="task-card">
-                            <div className="task-header">
-                                <p>{task.name}</p>
-                                <div className="badges">
-                                    <span className={`status-badge ${task.status}`}>
-                                        <span className="dot"></span>
-                                        {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
-                                    </span>
-                                </div>
-                            </div>
-                            <p className="description">{task.description}</p>
-                            <p className="date">
-                                {new Date(task.date).toLocaleDateString('en-GB', {
-                                    day: 'numeric', month: 'short', year: 'numeric'
-                                })}
-                            </p>
-                            <button
-                                className="edit-task-btn"
-                                onClick={() => handleEdit(task, index)}
-                            >
-                                Edit
-                            </button>
-                        </div>
-                    ))
-                ) : (
-                    <p>No tasks for today.</p>
-                )}
-            </div>
-        </div>
-    );
+    try {
+      const response = await fetch("http://localhost/php_server/tasks.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          action: "update",
+          index: taskIndex,
+          task: updatedTask
+        })
+      });
+
+      const result = await response.json();
+      alert(result.message || "Task updated!");
+      navigate('/TaskManagement');
+    } catch (error) {
+      console.error("Error updating:", error);
+      alert("Failed to update task.");
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const response = await fetch("http://localhost/php_server/tasks.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          action: "delete",
+          index: taskIndex
+        })
+      });
+
+      const result = await response.json();
+      alert(result.message || "Task deleted!");
+      navigate('/TaskManagement');
+    } catch (error) {
+      console.error("Error deleting:", error);
+      alert("Failed to delete task.");
+    }
+  };
+
+  return (
+    <div className="create-task-page">
+      <h2>Edit Task</h2>
+
+      <div className="calendar-container">
+        <label>Pick a date</label>
+        <Calendar value={selectedDate} onChange={setSelectedDate} />
+      </div>
+
+      <div className="form-group">
+        <label>Task Name</label>
+        <input type="text" value={taskName} onChange={(e) => setTaskName(e.target.value)} />
+      </div>
+
+      <div className="form-group">
+        <label>Task Description</label>
+        <textarea value={taskDescription} onChange={(e) => setTaskDescription(e.target.value)} />
+      </div>
+
+      <div className="form-group">
+        <label>Task Status</label>
+        <select value={taskStatus} onChange={(e) => setTaskStatus(e.target.value)}>
+          <option value="pending">Pending</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+
+      <div className="form-group inline">
+        <label>Get alert for this task</label>
+        <input type="checkbox" checked={alertOn} onChange={() => setAlertOn(!alertOn)} />
+      </div>
+
+      <div className="button-group">
+        <button className="create-task-btn" onClick={handleSave} style={{ marginRight: "10px" }}>
+          Save Change
+        </button>
+        <button
+          onClick={handleDelete}
+          style={{
+            padding: "12px 25px",
+            backgroundColor: "#ef4444",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            fontSize: "16px",
+            cursor: "pointer",
+          }}
+        >
+          Delete Task
+        </button>
+      </div>
+    </div>
+  );
 }
 
-export default TodaysTasks;
+export default EditTask;
