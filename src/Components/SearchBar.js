@@ -5,10 +5,16 @@ function SearchBar() {
     const [tasks, setTasks] = useState([]);
     const [filteredTasks, setFilteredTasks] = useState([]);
 
-    useEffect(() => {
-        const storedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
-        setTasks(storedTasks);
-    }, []);
+     useEffect(() => {
+            fetch("http://localhost/php_server/tasks.php")
+                .then(res => res.json())
+                .then(data => {
+                    setTasks(data);
+                })
+                .catch(error => {
+                    console.error("Failed to fetch tasks:", error);
+                });
+        }, []);
 
     useEffect(() => {
         if (search.trim() === '') {
