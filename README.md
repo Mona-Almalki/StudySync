@@ -1,2 +1,0 @@
-# StudySync
-CPIT405Project
